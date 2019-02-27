@@ -38,7 +38,7 @@ def daily_symbol_config():
     # with open('./symbol_config.yaml', 'w') as stream:
     #     yaml.dump(docs, stream, default_flow_style=False)
 
-    return 'Finished.'
+    return 'Finished. Yaml file is uploaded to google cloud storage.'
 
 
 def upload_blob(bucket_name, data, content_type, destination_blob_name):
@@ -47,8 +47,8 @@ def upload_blob(bucket_name, data, content_type, destination_blob_name):
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
-    blob.upload_from_string(data, content_type)
-    print('File uploaded to {}'.format(destination_blob_name))
+    blob.upload_from_string(data, content_type, None, 'publicRead')
+    print('{} uploaded to google cloud storage.'.format(destination_blob_name))
 
 
 if __name__ == "__main__":
