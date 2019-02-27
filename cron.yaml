@@ -1,0 +1,11 @@
+cron:
+- description: "daily symbol config"
+  url: /daily_symbol_config
+  schedule: every day 08:00
+  timezone: Asia/Taipei
+  target: daily-symbol-config
+- description: "daily crawler"
+  url: /daily_crawler
+  schedule: every 5 minutes from 14:30 to 15:10
+  timezone: Asia/Taipei
+  target: daily-crawler

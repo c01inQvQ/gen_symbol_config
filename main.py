@@ -3,6 +3,7 @@ from options_codes import gen_options_codes
 from flask import Flask
 from google.cloud import storage
 import yaml
+import json
 import datetime
 app = Flask(__name__)
 
@@ -32,23 +33,23 @@ def daily_symbol_config():
     with open('./symbol_config.yaml', 'r') as stream:
         docs = yaml.load(stream)
         docs['symbol']['option'] = options_codes_list
-    with open('./symbol_config.yaml', 'w') as stream:
-        yaml.dump(docs, stream, default_flow_style=False)
+
+    upload_blob('futures-ai-12', json.dumps(docs), 'application/x-yaml', 'symbol_config.yaml')
+
+    # with open('./symbol_config.yaml', 'w') as stream:
+    #     yaml.dump(docs, stream, default_flow_style=False)
 
     return 'Finished'
 
 
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
+def upload_blob(bucket_name, data, content_type, destination_blob_name):
     """Uploads a file to the bucket."""
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
-    blob.upload_from_filename(source_file_name)
-
-    print('File {} uploaded to {}.'.format(
-        source_file_name,
-        destination_blob_name))
+    blob.upload_from_string(data, content_type)
+    print('File uploaded to {}'.format(destination_blob_name))
 
 
 if __name__ == "__main__":
