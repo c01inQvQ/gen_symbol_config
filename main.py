@@ -1,7 +1,7 @@
-from settlement_dates import settlement_dates
-from options_codes import gen_options_codes
+from common.options_codes import get_settlement_date, gen_options_codes
 from flask import Flask
 from google.cloud import storage
+import json
 import yaml
 import datetime
 app = Flask(__name__)
@@ -12,24 +12,22 @@ def test():
     return 'ok.'
 
 
+@app.route('/options')
+def options():
+    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    old_settlement_date, new_settlement_date = get_settlement_date(today)
+    options_codes_list = gen_options_codes(old_settlement_date) + gen_options_codes(new_settlement_date)
+
+    return json.dumps(options_codes_list)
+
+
 @app.route('/daily_symbol_config')
 def daily_symbol_config():
     today = datetime.datetime.today().strftime('%Y-%m-%d')
-    if today in settlement_dates:
-        old_settlement_date = settlement_dates[today]
-        next_index = list(settlement_dates.keys()).index(today) + 1
-        new_settlement_date = list(settlement_dates.values())[next_index]
-        options_codes_list = gen_options_codes(old_settlement_date) + gen_options_codes(new_settlement_date)
+    old_settlement_date, new_settlement_date = get_settlement_date(today)
+    options_codes_list = gen_options_codes(old_settlement_date) + gen_options_codes(new_settlement_date)
 
-    else:
-        date_list = list(settlement_dates.keys())
-        date_list.append(today)
-        date_list.sort()
-        next_index = date_list.index(today)
-        new_settlement_date = list(settlement_dates.values())[next_index]
-        options_codes_list = gen_options_codes(new_settlement_date)
-
-    with open('./symbol_config.yaml', 'r') as stream:
+    with open('./yaml_template/symbol_config.yaml', 'r') as stream:
         docs = yaml.load(stream)
         docs['symbol']['option'] = options_codes_list
 
